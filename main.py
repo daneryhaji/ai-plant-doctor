@@ -7,14 +7,14 @@ from skimage.transform import resize
 import numpy as np
 import os
 
-# Setup
+# Initialize Flask app
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# Load model once
+# Load model once at startup
 model = load_model("plant_disease_model.h5")
 
-# Disease classes
+# Class names
 classes = [
     'Corn - Cercospora',
     'Corn - Rust',
@@ -23,50 +23,49 @@ classes = [
     'Peach - Healthy'
 ]
 
-# Home
+# Route: Home page
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
-# About
+# Route: About page
 @app.route('/about')
 def about():
     return send_from_directory('.', 'about.html')
 
-# Prediction
+# Route: Prediction
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
         return jsonify({'error': 'No image uploaded'}), 400
 
     file = request.files['image']
-    filename = secure_filename(file.filename or "uploaded.png")
-    os.makedirs("uploads", exist_ok=True)
-    path = os.path.join("uploads", filename)
-    file.save(path)
+    filename = secure_filename(file.filename or "image.png")
+    os.makedirs('uploads', exist_ok=True)
+    filepath = os.path.join('uploads', filename)
+    file.save(filepath)
 
     try:
-        img = imread(path)
-        if img.shape[-1] == 4:  # Remove alpha channel
-            img = img[:, :, :3]
+        img = imread(filepath)
+        if img.shape[-1] == 4:
+            img = img[:, :, :3]  # Remove alpha channel
         img = resize(img, (28, 28))
         img = np.expand_dims(img, axis=0)
 
-        probs = model.predict(img)[0]
-        label = classes[np.argmax(probs)]
-        confidence = f"{np.max(probs) * 100:.2f}%"
+        prediction_probs = model.predict(img)[0]
+        prediction = classes[np.argmax(prediction_probs)]
+        confidence = f"{np.max(prediction_probs) * 100:.2f}%"
 
-        return jsonify({'prediction': label, 'confidence': confidence})
-
+        return jsonify({'prediction': prediction, 'confidence': confidence})
+    
     except Exception as e:
         return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
-# Fallback: serve static files (JS, CSS, images)
+# Route: Serve JS, CSS, images
 @app.route('/<path:filename>')
-def serve_static(filename):
+def static_files(filename):
     return send_from_directory('.', filename)
 
-# Run
+# Run (Render will use gunicorn main:app so this isn't used there)
 if __name__ == '__main__':
-    app.run()
-
+    app.run(host='0.0.0.0', port=5000, debug=True)
