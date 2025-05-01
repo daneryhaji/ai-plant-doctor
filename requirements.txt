@@ -4,3 +4,4 @@ tensorflow
 scikit-image
 numpy
 werkzeug
+gunicorn
