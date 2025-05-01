@@ -7,14 +7,10 @@ from skimage.transform import resize
 import numpy as np
 import os
 
-# Initialize Flask app
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# Load model once at startup
-model = load_model("plant_disease_model.h5")
-
-# Class names
+# Class labels
 classes = [
     'Corn - Cercospora',
     'Corn - Rust',
@@ -23,7 +19,7 @@ classes = [
     'Peach - Healthy'
 ]
 
-# Route: Home page
+# Route: Homepage
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -33,7 +29,7 @@ def index():
 def about():
     return send_from_directory('.', 'about.html')
 
-# Route: Prediction
+# Route: Predict
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
@@ -46,26 +42,29 @@ def predict():
     file.save(filepath)
 
     try:
+        # Read and preprocess image
         img = imread(filepath)
         if img.shape[-1] == 4:
-            img = img[:, :, :3]  # Remove alpha channel
+            img = img[:, :, :3]  # Convert RGBA to RGB
         img = resize(img, (28, 28))
         img = np.expand_dims(img, axis=0)
 
+        # Lazy-load model (prevents memory crashes)
+        model = load_model("plant_disease_model.h5")
         prediction_probs = model.predict(img)[0]
-        prediction = classes[np.argmax(prediction_probs)]
+        predicted_label = classes[np.argmax(prediction_probs)]
         confidence = f"{np.max(prediction_probs) * 100:.2f}%"
 
-        return jsonify({'prediction': prediction, 'confidence': confidence})
+        return jsonify({'prediction': predicted_label, 'confidence': confidence})
     
     except Exception as e:
         return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
-# Route: Serve JS, CSS, images
+# Route: Static files (JS, CSS, etc.)
 @app.route('/<path:filename>')
 def static_files(filename):
     return send_from_directory('.', filename)
 
-# Run (Render will use gunicorn main:app so this isn't used there)
+# Run locally (Render uses gunicorn to run `main:app`)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
