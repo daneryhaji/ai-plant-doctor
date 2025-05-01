@@ -1,0 +1,81 @@
+@app.route('/about')
+def about():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>About - AI Plant Doctor</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: #e3f2fd;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin: 0;
+            }
+            header {
+                background: #1976d2;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                width: 100%;
+            }
+            nav {
+                background: #1565c0;
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+            nav a {
+                color: white;
+                padding: 14px 20px;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            nav a:hover {
+                background-color: #0d47a1;
+            }
+            .content {
+                background: white;
+                max-width: 800px;
+                margin-top: 40px;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                text-align: center;
+            }
+            h1 {
+                color: #1976d2;
+            }
+            p {
+                font-size: 1.1em;
+                color: #333;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>About AI Plant Doctor</h1>
+        </header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+        </nav>
+        <div class="content">
+            <p>
+                <strong>AI Plant Doctor</strong> is a web application that uses artificial intelligence to detect
+                plant leaf diseases. Upload a leaf image of corn or peach, and our deep learning model will
+                classify it into categories such as healthy or specific diseases.
+            </p>
+            <p>
+                This project was built with TensorFlow, Flask, and JavaScript. It demonstrates how machine learning
+                can assist in agriculture by helping farmers and gardeners diagnose issues quickly and efficiently.
+            </p>
+            <p>
+                Created as an educational tool to explore image classification with convolutional neural networks.
+            </p>
+        </div>
+    </body>
+    </html>
+    """
